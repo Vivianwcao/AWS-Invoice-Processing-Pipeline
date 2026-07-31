@@ -43,7 +43,10 @@ I also integrated conditional downstream stages for coding verification and pric
 
 ## Architecture & Data Flow
 
-<img width="1125" height="926" alt="autoPDFstepfunctions_graph" src="https://github.com/user-attachments/assets/de7f2a80-173b-489a-b220-6b7b1fb74c82" />
+<img width="1601" height="736" alt="auto_invalid_lines_re_process" src="https://github.com/user-attachments/assets/899b4720-248a-41bc-b537-587d328b71db" />
+<img width="1601" height="614" alt="auto_invalid_lines" src="https://github.com/user-attachments/assets/4d3eea5b-ac2d-4d77-85a1-1f9629a8f7e4" />
+<img width="1600" height="760" alt="auto_with_pricebook" src="https://github.com/user-attachments/assets/310b3ebc-89a7-431e-9112-7ed6e50af7f8" />
+
 
 ### Data Processing Steps
 
