@@ -42,6 +42,10 @@ I also integrated conditional downstream stages for coding verification and pric
 ---
 
 ## Architecture & Data Flow
+
+***State Machine***
+<img width="1125" height="926" alt="autoPDFstepfunctions_graph" src="https://github.com/user-attachments/assets/ef5ef630-6cf3-4574-8df0-dab8d1b310e6" />
+
 1. ***Route 1** - Auto-PDF parsing → Coding validation and/or pricebook mapping → Lines validated → Downstream processing* 
 2. ***Route 2** - Auto-PDF parsing → Coding validation and/or pricebook mapping → Lines failed validation (PDF style drift) → Manual OCR through Xtracta* 
 3. ***Route 3**- Manual OCR through Xtracta → Clean and format API payload → Coding validation and/or pricebook mapping → Downstream processing* 
