@@ -42,15 +42,16 @@ I also integrated conditional downstream stages for coding verification and pric
 ---
 
 ## Architecture & Data Flow
-***Route 1** - Auto-PDF parsing → Coding validation and/or pricebook mapping → Lines validated → Downstream processing* 
-<img width="1600" height="760" alt="auto_with_pricebook" src="https://github.com/user-attachments/assets/310b3ebc-89a7-431e-9112-7ed6e50af7f8" />
+1. ***Route 1** - Auto-PDF parsing → Coding validation and/or pricebook mapping → Lines validated → Downstream processing* 
+2. ***Route 2** - Auto-PDF parsing → Coding validation and/or pricebook mapping → Lines failed validation (PDF style drift) → Manual OCR through Xtracta* 
+3. ***Route 3**- Manual OCR through Xtracta → Clean and format API payload → Coding validation and/or pricebook mapping → Downstream processing* 
 
-***Route 2** - Auto-PDF parsing → Coding validation and/or pricebook mapping → Lines failed validation (PDF style drift) → Manual OCR through Xtracta* 
-<img width="1600" height="777" alt="auto_invalid_lines" src="https://github.com/user-attachments/assets/fe6e21c0-f691-4eba-83f9-cc79c6abe660" />
+<img width="33%" alt="auto_with_pricebook" src="https://github.com/user-attachments/assets/76792e85-26a6-4859-b0e9-02f0e460be67" />
+<img width="33%" alt="auto_invalid_lines" src="https://github.com/user-attachments/assets/d4a5081f-2e38-4de0-9160-a3656af922b8" />
+<img width="33%" alt="auto_invalid_lines_manual_process" src="https://github.com/user-attachments/assets/08e83036-017b-423a-973d-6847f925718d" />
 
-***Route 3**- Manual OCR through Xtracta → Clean and format API payload → Coding validation and/or pricebook mapping → Downstream processing* 
-<img width="1601" height="736" alt="auto_invalid_lines_manual_process" src="https://github.com/user-attachments/assets/899b4720-248a-41bc-b537-587d328b71db" />
 
+***Overview***
 <img width="1613" height="634" alt="AUto-PDF State machine executions" src="https://github.com/user-attachments/assets/d29c2329-31ad-48dd-ae8f-6e576cea3bc8" />
 
 
