@@ -11,9 +11,11 @@ Automates PDF text extraction, OCR fallbacks, VPC-secured API validation, and pr
 
 ## Overview
 
-Our integration platform processes field service tickets and invoices for suppliers, delivering them to e-procurement portals such as OpenInvoice, OpenTicket, and Jobutrax. When suppliers send structured JSON or XML data, the platform can process it directly for downstream mapping and submission. When suppliers send PDF documents, the data first needs to be extracted. The current process sends the PDF to the Xtracta OCR API, where a person manually selects and reviews each invoice line before submitting the extracted data for further processing.
+Our integration platform processes field service tickets and invoices for suppliers, delivering them to e-procurement portals such as OpenInvoice, OpenTicket, and Jobutrax. When suppliers send structured JSON or XML data, the platform can process it directly for downstream mapping and submission. When suppliers send PDF documents, the data first needs to be extracted. 
 
-Once the data is available, each supplier may have different downstream processing requirements. Some require line items to be matched against buyer contract pricebooks, while others require AFE numbers and accounting codes to be validated through portal APIs. Historically, every supplier integration required its own isolated processing flow.
+PDFs are not a reliable data source because each supplier uses a different layout, and the layout can change without notice. Even when a supplier keeps the same general format, small changes in the PDF can affect extraction. A slight change in the position of a field, the length of a line, the width of a table, or the spacing between fields may not be noticeable to a person viewing the invoice, but can cause the OCR to miss or misread the data. For this reason, the current process sends PDF invoices to the Xtracta OCR API. A person then has to review the OCR results against the invoice, correct any fields or line items that were missed or read incorrectly, manually select anything the OCR did not pick up, and confirm the extracted data before submitting it for further processing.
+
+Once the data is extracted, each supplier may have different downstream processing requirements. Some require line items to be matched against buyer contract pricebooks, while others require AFE numbers and accounting codes to be validated through portal APIs. Historically, every supplier integration required its own isolated processing flow.
 
 ## Business Problems
 
@@ -74,18 +76,14 @@ After extraction, the data goes to the downstream process needed for that suppli
 
 ## Engineering Challenges & Solutions
 
-### 1. Unifying Pipeline Entry Points
-* **The Challenge:** Supporting direct PDF parsing alongside asynchronous OCR callbacks required maintaining separate processing scripts for each input format.
-* **The Solution:** Added an entry function (`check_source`) that inspects inbound payload structures and dispatches data to specialized parsing modules (`AutoPDF_parser` or `format_Xtracta_json`). Both paths transform incoming data into an identical internal JSON format, enabling all downstream validation and delivery modules to be shared.
-
-### 2. Managing Multi-Platform Security & VPC Networking
-* **The Challenge:** Downstream validation required calling external APIs with contrasting security rules. Jobutrax requires Bearer tokens, whereas OpenInvoice mandates static whitelisted IP addresses and mTLS client certificates.
-* **The Solution:** Stored Jobutrax Bearer tokens in AWS Secrets Manager for runtime retrieval. For OpenInvoice, deployed the validation Lambda inside an AWS VPC connected to a NAT Gateway with Elastic IPs to ensure static outbound traffic, pulling mTLS client certificates into `/tmp` from SSM Parameter Store during cold starts.
-
-### 3. Extracting Data from Unstructured Table Layouts
+### 1. Extracting Data from Unstructured Table Layouts
 * **The Challenge:** Numerous supplier invoices render line items in visual grids without explicit table cell borders. Standard extraction libraries regularly merged adjacent text columns or split descriptions across rows.
 * **The Solution:** Built a custom coordinate grid reconstructor using `PDFPlumber` geometry. The parser uses `extract_text_lines()` to locate row Y-axis baselines bounded by header and footer margins, then applies `extract_words()` with explicit X-axis boundaries to map words into columns based on left-edge positioning.
 
-### 4. Catching Extraction Errors with Dual-Strategy Validation
+### 2. Catching Extraction Errors with Dual-Strategy Validation
 * **The Challenge:** Text extraction can occasionally misread character values, and source invoices sometimes contain printed math errors from the originating system.
 * **The Solution:** Developed a reconciliation function in `validate.py`. The algorithm calculates line totals ($\text{Quantity} \times \text{Rate}$) across billable lines while independently summing printed line amounts. By filtering out zero-rate section headers, the function confirms extraction accuracy if either calculation matches the document subtotal within a narrow rounding tolerance.
+  
+### 3. Managing Multi-Platform Security & VPC Networking
+* **The Challenge:** Downstream validation required calling external APIs with contrasting security rules. Jobutrax requires Bearer tokens, whereas OpenInvoice mandates static whitelisted IP addresses and mTLS client certificates.
+* **The Solution:** Stored Jobutrax Bearer tokens in AWS Secrets Manager for runtime retrieval. For OpenInvoice, deployed the validation Lambda inside an AWS VPC connected to a NAT Gateway with Elastic IPs to ensure static outbound traffic, pulling mTLS client certificates into `/tmp` from SSM Parameter Store during cold starts.
